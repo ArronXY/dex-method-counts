@@ -36,7 +36,7 @@ public class FieldRef {
     }
 
     /**
-     * Gets the type name.  Examples: "Ljava/lang/String;", "[I".
+     * Gets the type name. Examples: "Ljava/lang/String;", "[I".
      */
     public String getTypeName() {
         return mFieldType;

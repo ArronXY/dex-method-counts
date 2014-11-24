@@ -26,7 +26,7 @@ import java.util.Arrays;
 public class DexData {
     private RandomAccessFile mDexFile;
     private HeaderItem mHeaderItem;
-    private String[] mStrings;              // strings from string_data_*
+    private String[] mStrings; // strings from string_data_*
     private TypeIdItem[] mTypeIds;
     private ProtoIdItem[] mProtoIds;
     private FieldIdItem[] mFieldIds;
@@ -44,10 +44,20 @@ public class DexData {
     }
 
     /**
+     * Verifies the given magic number.
+     */
+    private static boolean verifyMagic(byte[] magic) {
+        return Arrays.equals(magic, HeaderItem.DEX_FILE_MAGIC)
+                || Arrays.equals(magic, HeaderItem.DEX_FILE_MAGIC_API_13);
+    }
+
+    /**
      * Loads the contents of the DEX file into our data structures.
      *
-     * @throws IOException if we encounter a problem while reading
-     * @throws DexDataException if the DEX contents look bad
+     * @throws IOException
+     *             if we encounter a problem while reading
+     * @throws DexDataException
+     *             if the DEX contents look bad
      */
     public void load() throws IOException {
         parseHeaderItem();
@@ -63,14 +73,6 @@ public class DexData {
     }
 
     /**
-     * Verifies the given magic number.
-     */
-    private static boolean verifyMagic(byte[] magic) {
-        return Arrays.equals(magic, HeaderItem.DEX_FILE_MAGIC) ||
-            Arrays.equals(magic, HeaderItem.DEX_FILE_MAGIC_API_13);
-    }
-
-    /**
      * Parses the interesting bits out of the header.
      */
     void parseHeaderItem() throws IOException {
@@ -81,8 +83,7 @@ public class DexData {
         byte[] magic = new byte[8];
         readBytes(magic);
         if (!verifyMagic(magic)) {
-            System.err.println("Magic number is wrong -- are you sure " +
-                "this is a DEX file?");
+            System.err.println("Magic number is wrong -- are you sure " + "this is a DEX file?");
             throw new DexDataException();
         }
 
@@ -90,26 +91,26 @@ public class DexData {
          * Read the endian tag, so we properly swap things as we read
          * them from here on.
          */
-        seek(8+4+20+4+4);
+        seek(8 + 4 + 20 + 4 + 4);
         mHeaderItem.endianTag = readInt();
         if (mHeaderItem.endianTag == HeaderItem.ENDIAN_CONSTANT) {
             /* do nothing */
-        } else if (mHeaderItem.endianTag == HeaderItem.REVERSE_ENDIAN_CONSTANT){
+        } else if (mHeaderItem.endianTag == HeaderItem.REVERSE_ENDIAN_CONSTANT) {
             /* file is big-endian (!), reverse future reads */
             isBigEndian = true;
         } else {
-            System.err.println("Endian constant has unexpected value " +
-                Integer.toHexString(mHeaderItem.endianTag));
+            System.err.println("Endian constant has unexpected value "
+                    + Integer.toHexString(mHeaderItem.endianTag));
             throw new DexDataException();
         }
 
-        seek(8+4+20);  // magic, checksum, signature
+        seek(8 + 4 + 20); // magic, checksum, signature
         mHeaderItem.fileSize = readInt();
         mHeaderItem.headerSize = readInt();
-        /*mHeaderItem.endianTag =*/ readInt();
-        /*mHeaderItem.linkSize =*/ readInt();
-        /*mHeaderItem.linkOff =*/ readInt();
-        /*mHeaderItem.mapOff =*/ readInt();
+        /* mHeaderItem.endianTag = */readInt();
+        /* mHeaderItem.linkSize = */readInt();
+        /* mHeaderItem.linkOff = */readInt();
+        /* mHeaderItem.mapOff = */readInt();
         mHeaderItem.stringIdsSize = readInt();
         mHeaderItem.stringIdsOff = readInt();
         mHeaderItem.typeIdsSize = readInt();
@@ -122,22 +123,22 @@ public class DexData {
         mHeaderItem.methodIdsOff = readInt();
         mHeaderItem.classDefsSize = readInt();
         mHeaderItem.classDefsOff = readInt();
-        /*mHeaderItem.dataSize =*/ readInt();
-        /*mHeaderItem.dataOff =*/ readInt();
+        /* mHeaderItem.dataSize = */readInt();
+        /* mHeaderItem.dataOff = */readInt();
     }
 
     /**
      * Loads the string table out of the DEX.
      *
      * First we read all of the string_id_items, then we read all of the
-     * string_data_item.  Doing it this way should allow us to avoid
+     * string_data_item. Doing it this way should allow us to avoid
      * seeking around in the file.
      */
     void loadStrings() throws IOException {
         int count = mHeaderItem.stringIdsSize;
         int stringOffsets[] = new int[count];
 
-        //System.out.println("reading " + count + " strings");
+        // System.out.println("reading " + count + " strings");
 
         seek(mHeaderItem.stringIdsOff);
         for (int i = 0; i < count; i++) {
@@ -148,9 +149,9 @@ public class DexData {
 
         seek(stringOffsets[0]);
         for (int i = 0; i < count; i++) {
-            seek(stringOffsets[i]);         // should be a no-op
+            seek(stringOffsets[i]); // should be a no-op
             mStrings[i] = readString();
-            //System.out.println("STR: " + i + ": " + mStrings[i]);
+            // System.out.println("STR: " + i + ": " + mStrings[i]);
         }
     }
 
@@ -161,14 +162,14 @@ public class DexData {
         int count = mHeaderItem.typeIdsSize;
         mTypeIds = new TypeIdItem[count];
 
-        //System.out.println("reading " + count + " typeIds");
+        // System.out.println("reading " + count + " typeIds");
         seek(mHeaderItem.typeIdsOff);
         for (int i = 0; i < count; i++) {
             mTypeIds[i] = new TypeIdItem();
             mTypeIds[i].descriptorIdx = readInt();
 
-            //System.out.println(i + ": " + mTypeIds[i].descriptorIdx +
-            //    " " + mStrings[mTypeIds[i].descriptorIdx]);
+            // System.out.println(i + ": " + mTypeIds[i].descriptorIdx +
+            // " " + mStrings[mTypeIds[i].descriptorIdx]);
         }
     }
 
@@ -179,7 +180,7 @@ public class DexData {
         int count = mHeaderItem.protoIdsSize;
         mProtoIds = new ProtoIdItem[count];
 
-        //System.out.println("reading " + count + " protoIds");
+        // System.out.println("reading " + count + " protoIds");
         seek(mHeaderItem.protoIdsOff);
 
         /*
@@ -191,8 +192,8 @@ public class DexData {
             mProtoIds[i].returnTypeIdx = readInt();
             mProtoIds[i].parametersOff = readInt();
 
-            //System.out.println(i + ": " + mProtoIds[i].shortyIdx +
-            //    " " + mStrings[mProtoIds[i].shortyIdx]);
+            // System.out.println(i + ": " + mProtoIds[i].shortyIdx +
+            // " " + mStrings[mProtoIds[i].shortyIdx]);
         }
 
         /*
@@ -208,7 +209,7 @@ public class DexData {
                 continue;
             } else {
                 seek(offset);
-                int size = readInt();       // #of entries in list
+                int size = readInt(); // #of entries in list
                 protoId.types = new int[size];
 
                 for (int j = 0; j < size; j++) {
@@ -225,7 +226,7 @@ public class DexData {
         int count = mHeaderItem.fieldIdsSize;
         mFieldIds = new FieldIdItem[count];
 
-        //System.out.println("reading " + count + " fieldIds");
+        // System.out.println("reading " + count + " fieldIds");
         seek(mHeaderItem.fieldIdsOff);
         for (int i = 0; i < count; i++) {
             mFieldIds[i] = new FieldIdItem();
@@ -233,8 +234,8 @@ public class DexData {
             mFieldIds[i].typeIdx = readShort() & 0xffff;
             mFieldIds[i].nameIdx = readInt();
 
-            //System.out.println(i + ": " + mFieldIds[i].nameIdx +
-            //    " " + mStrings[mFieldIds[i].nameIdx]);
+            // System.out.println(i + ": " + mFieldIds[i].nameIdx +
+            // " " + mStrings[mFieldIds[i].nameIdx]);
         }
     }
 
@@ -245,7 +246,7 @@ public class DexData {
         int count = mHeaderItem.methodIdsSize;
         mMethodIds = new MethodIdItem[count];
 
-        //System.out.println("reading " + count + " methodIds");
+        // System.out.println("reading " + count + " methodIds");
         seek(mHeaderItem.methodIdsOff);
         for (int i = 0; i < count; i++) {
             mMethodIds[i] = new MethodIdItem();
@@ -253,8 +254,8 @@ public class DexData {
             mMethodIds[i].protoIdx = readShort() & 0xffff;
             mMethodIds[i].nameIdx = readInt();
 
-            //System.out.println(i + ": " + mMethodIds[i].nameIdx +
-            //    " " + mStrings[mMethodIds[i].nameIdx]);
+            // System.out.println(i + ": " + mMethodIds[i].nameIdx +
+            // " " + mStrings[mMethodIds[i].nameIdx]);
         }
     }
 
@@ -265,22 +266,22 @@ public class DexData {
         int count = mHeaderItem.classDefsSize;
         mClassDefs = new ClassDefItem[count];
 
-        //System.out.println("reading " + count + " classDefs");
+        // System.out.println("reading " + count + " classDefs");
         seek(mHeaderItem.classDefsOff);
         for (int i = 0; i < count; i++) {
             mClassDefs[i] = new ClassDefItem();
             mClassDefs[i].classIdx = readInt();
 
-            /* access_flags = */ readInt();
-            /* superclass_idx = */ readInt();
-            /* interfaces_off = */ readInt();
-            /* source_file_idx = */ readInt();
-            /* annotations_off = */ readInt();
-            /* class_data_off = */ readInt();
-            /* static_values_off = */ readInt();
+            /* access_flags = */readInt();
+            /* superclass_idx = */readInt();
+            /* interfaces_off = */readInt();
+            /* source_file_idx = */readInt();
+            /* annotations_off = */readInt();
+            /* class_data_off = */readInt();
+            /* static_values_off = */readInt();
 
-            //System.out.println(i + ": " + mClassDefs[i].classIdx + " " +
-            //    mStrings[mTypeIds[mClassDefs[i].classIdx].descriptorIdx]);
+            // System.out.println(i + ": " + mClassDefs[i].classIdx + " " +
+            // mStrings[mTypeIds[mClassDefs[i].classIdx].descriptorIdx]);
         }
     }
 
@@ -289,7 +290,7 @@ public class DexData {
      * DEX file or within the VM (e.g. primitive classes and arrays).
      */
     void markInternalClasses() {
-        for (int i = mClassDefs.length -1; i >= 0; i--) {
+        for (int i = mClassDefs.length - 1; i >= 0; i--) {
             mTypeIds[mClassDefs[i].classIdx].internal = true;
         }
 
@@ -303,16 +304,15 @@ public class DexData {
                 mTypeIds[i].internal = true;
             }
 
-            //System.out.println(i + " " +
-            //    (mTypeIds[i].internal ? "INTERNAL" : "external") + " - " +
-            //    mStrings[mTypeIds[i].descriptorIdx]);
+            // System.out.println(i + " " +
+            // (mTypeIds[i].internal ? "INTERNAL" : "external") + " - " +
+            // mStrings[mTypeIds[i].descriptorIdx]);
         }
     }
 
-
     /*
      * =======================================================================
-     *      Queries
+     * Queries
      * =======================================================================
      */
 
@@ -349,7 +349,7 @@ public class DexData {
 
     /**
      * Returns an array with all of the class references that don't
-     * correspond to classes in the DEX file.  Each class reference has
+     * correspond to classes in the DEX file. Each class reference has
      * a list of the referenced fields and methods associated with
      * that class.
      */
@@ -361,8 +361,7 @@ public class DexData {
         int count = 0;
         for (int i = 0; i < mTypeIds.length; i++) {
             if (!mTypeIds[i].internal) {
-                sparseRefs[i] =
-                    new ClassRef(mStrings[mTypeIds[i].descriptorIdx]);
+                sparseRefs[i] = new ClassRef(mStrings[mTypeIds[i].descriptorIdx]);
                 count++;
             }
         }
@@ -392,10 +391,8 @@ public class DexData {
         for (int i = 0; i < mFieldIds.length; i++) {
             if (!mTypeIds[mFieldIds[i].classIdx].internal) {
                 FieldIdItem fieldId = mFieldIds[i];
-                FieldRef newFieldRef = new FieldRef(
-                        classNameFromTypeIndex(fieldId.classIdx),
-                        classNameFromTypeIndex(fieldId.typeIdx),
-                        mStrings[fieldId.nameIdx]);
+                FieldRef newFieldRef = new FieldRef(classNameFromTypeIndex(fieldId.classIdx),
+                        classNameFromTypeIndex(fieldId.typeIdx), mStrings[fieldId.nameIdx]);
                 sparseRefs[mFieldIds[i].classIdx].addField(newFieldRef);
             }
         }
@@ -409,11 +406,9 @@ public class DexData {
         for (int i = 0; i < mMethodIds.length; i++) {
             if (!mTypeIds[mMethodIds[i].classIdx].internal) {
                 MethodIdItem methodId = mMethodIds[i];
-                MethodRef newMethodRef = new MethodRef(
-                        classNameFromTypeIndex(methodId.classIdx),
+                MethodRef newMethodRef = new MethodRef(classNameFromTypeIndex(methodId.classIdx),
                         argArrayFromProtoIndex(methodId.protoIdx),
-                        returnTypeFromProtoIndex(methodId.protoIdx),
-                        mStrings[methodId.nameIdx]);
+                        returnTypeFromProtoIndex(methodId.protoIdx), mStrings[methodId.nameIdx]);
                 sparseRefs[mMethodIds[i].classIdx].addMethod(newMethodRef);
             }
         }
@@ -426,19 +421,16 @@ public class DexData {
         MethodRef[] methodRefs = new MethodRef[mMethodIds.length];
         for (int i = 0; i < mMethodIds.length; i++) {
             MethodIdItem methodId = mMethodIds[i];
-            methodRefs[i] = new MethodRef(
-                    classNameFromTypeIndex(methodId.classIdx),
+            methodRefs[i] = new MethodRef(classNameFromTypeIndex(methodId.classIdx),
                     argArrayFromProtoIndex(methodId.protoIdx),
-                    returnTypeFromProtoIndex(methodId.protoIdx),
-                    mStrings[methodId.nameIdx]);
+                    returnTypeFromProtoIndex(methodId.protoIdx), mStrings[methodId.nameIdx]);
         }
         return methodRefs;
     }
 
-
     /*
      * =======================================================================
-     *      Basic I/O functions
+     * Basic I/O functions
      * =======================================================================
      */
 
@@ -483,19 +475,20 @@ public class DexData {
         mDexFile.readFully(tmpBuf, 0, 4);
 
         if (isBigEndian) {
-            return (tmpBuf[3] & 0xff) | ((tmpBuf[2] & 0xff) << 8) |
-                   ((tmpBuf[1] & 0xff) << 16) | ((tmpBuf[0] & 0xff) << 24);
+            return (tmpBuf[3] & 0xff) | ((tmpBuf[2] & 0xff) << 8) | ((tmpBuf[1] & 0xff) << 16)
+                    | ((tmpBuf[0] & 0xff) << 24);
         } else {
-            return (tmpBuf[0] & 0xff) | ((tmpBuf[1] & 0xff) << 8) |
-                   ((tmpBuf[2] & 0xff) << 16) | ((tmpBuf[3] & 0xff) << 24);
+            return (tmpBuf[0] & 0xff) | ((tmpBuf[1] & 0xff) << 8) | ((tmpBuf[2] & 0xff) << 16)
+                    | ((tmpBuf[3] & 0xff) << 24);
         }
     }
 
     /**
-     * Reads a variable-length unsigned LEB128 value.  Does not attempt to
+     * Reads a variable-length unsigned LEB128 value. Does not attempt to
      * verify that the value is valid.
      *
-     * @throws EOFException if we run off the end of the file
+     * @throws EOFException
+     *             if we run off the end of the file
      */
     int readUnsignedLeb128() throws IOException {
         int result = 0;
@@ -513,13 +506,13 @@ public class DexData {
      * Reads a UTF-8 string.
      *
      * We don't know how long the UTF-8 string is, so we have to read one
-     * byte at a time.  We could make an educated guess based on the
+     * byte at a time. We could make an educated guess based on the
      * utf16_size and seek back if we get it wrong, but seeking backward
      * may cause the underlying implementation to reload I/O buffers.
      */
     String readString() throws IOException {
         int utf16len = readUnsignedLeb128();
-        byte inBuf[] = new byte[utf16len * 3];      // worst case
+        byte inBuf[] = new byte[utf16len * 3]; // worst case
         int idx;
 
         for (idx = 0; idx < inBuf.length; idx++) {
@@ -532,10 +525,9 @@ public class DexData {
         return new String(inBuf, 0, idx, "UTF-8");
     }
 
-
     /*
      * =======================================================================
-     *      Internal "structure" declarations
+     * Internal "structure" declarations
      * =======================================================================
      */
 
@@ -543,6 +535,13 @@ public class DexData {
      * Holds the contents of a header_item.
      */
     static class HeaderItem {
+        /* expected magic values */
+        public static final byte[] DEX_FILE_MAGIC = { 0x64, 0x65, 0x78, 0x0a, 0x30, 0x33, 0x36,
+                0x00 };
+        public static final byte[] DEX_FILE_MAGIC_API_13 = { 0x64, 0x65, 0x78, 0x0a, 0x30, 0x33,
+                0x35, 0x00 };
+        public static final int ENDIAN_CONSTANT = 0x12345678;
+        public static final int REVERSE_ENDIAN_CONSTANT = 0x78563412;
         public int fileSize;
         public int headerSize;
         public int endianTag;
@@ -552,58 +551,50 @@ public class DexData {
         public int fieldIdsSize, fieldIdsOff;
         public int methodIdsSize, methodIdsOff;
         public int classDefsSize, classDefsOff;
-
-        /* expected magic values */
-        public static final byte[] DEX_FILE_MAGIC = {
-            0x64, 0x65, 0x78, 0x0a, 0x30, 0x33, 0x36, 0x00 };
-        public static final byte[] DEX_FILE_MAGIC_API_13 = {
-            0x64, 0x65, 0x78, 0x0a, 0x30, 0x33, 0x35, 0x00 };
-        public static final int ENDIAN_CONSTANT = 0x12345678;
-        public static final int REVERSE_ENDIAN_CONSTANT = 0x78563412;
     }
 
     /**
      * Holds the contents of a type_id_item.
      *
-     * This is chiefly a list of indices into the string table.  We need
+     * This is chiefly a list of indices into the string table. We need
      * some additional bits of data, such as whether or not the type ID
      * represents a class defined in this DEX, so we use an object for
-     * each instead of a simple integer.  (Could use a parallel array, but
+     * each instead of a simple integer. (Could use a parallel array, but
      * since this is a desktop app it's not essential.)
      */
     static class TypeIdItem {
-        public int descriptorIdx;       // index into string_ids
+        public int descriptorIdx; // index into string_ids
 
-        public boolean internal;        // defined within this DEX file?
+        public boolean internal; // defined within this DEX file?
     }
 
     /**
      * Holds the contents of a proto_id_item.
      */
     static class ProtoIdItem {
-        public int shortyIdx;           // index into string_ids
-        public int returnTypeIdx;       // index into type_ids
-        public int parametersOff;       // file offset to a type_list
+        public int shortyIdx; // index into string_ids
+        public int returnTypeIdx; // index into type_ids
+        public int parametersOff; // file offset to a type_list
 
-        public int types[];             // contents of type list
+        public int types[]; // contents of type list
     }
 
     /**
      * Holds the contents of a field_id_item.
      */
     static class FieldIdItem {
-        public int classIdx;            // index into type_ids (defining class)
-        public int typeIdx;             // index into type_ids (field type)
-        public int nameIdx;             // index into string_ids
+        public int classIdx; // index into type_ids (defining class)
+        public int typeIdx; // index into type_ids (field type)
+        public int nameIdx; // index into string_ids
     }
 
     /**
      * Holds the contents of a method_id_item.
      */
     static class MethodIdItem {
-        public int classIdx;            // index into type_ids
-        public int protoIdx;            // index into proto_ids
-        public int nameIdx;             // index into string_ids
+        public int classIdx; // index into type_ids
+        public int protoIdx; // index into proto_ids
+        public int nameIdx; // index into string_ids
     }
 
     /**
@@ -613,6 +604,6 @@ public class DexData {
      * the class_def_item that we might want later.
      */
     static class ClassDefItem {
-        public int classIdx;            // index into type_ids
+        public int classIdx; // index into type_ids
     }
 }

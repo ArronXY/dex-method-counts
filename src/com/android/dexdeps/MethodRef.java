@@ -25,12 +25,29 @@ public class MethodRef {
     /**
      * Initializes a new field reference.
      */
-    public MethodRef(String declClass, String[] argTypes, String returnType,
-            String methodName) {
+    public MethodRef(String declClass, String[] argTypes, String returnType, String methodName) {
         mDeclClass = declClass;
         mArgTypes = argTypes;
         mReturnType = returnType;
         mMethodName = methodName;
+    }
+
+    /**
+     * Returns the method descriptor, given the argument and return type
+     * prototype strings.
+     */
+    private static String descriptorFromProtoArray(String[] protos, String returnType) {
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("(");
+        for (int i = 0; i < protos.length; i++) {
+            builder.append(protos[i]);
+        }
+
+        builder.append(")");
+        builder.append(returnType);
+
+        return builder.toString();
     }
 
     /**
@@ -62,44 +79,26 @@ public class MethodRef {
     }
 
     /**
-     * Gets the method's return type.  Examples: "Ljava/lang/String;", "[I".
+     * Gets the method's return type. Examples: "Ljava/lang/String;", "[I".
      */
     public String getReturnTypeName() {
         return mReturnType;
     }
 
-    /**
-     * Returns the method descriptor, given the argument and return type
-     * prototype strings.
-     */
-    private static String descriptorFromProtoArray(String[] protos,
-            String returnType) {
-        StringBuilder builder = new StringBuilder();
-
-        builder.append("(");
-        for (int i = 0; i < protos.length; i++) {
-            builder.append(protos[i]);
-        }
-
-        builder.append(")");
-        builder.append(returnType);
-
-        return builder.toString();
-    }
-
-    @Override public boolean equals(Object o) {
+    @Override
+    public boolean equals(Object o) {
         if (!(o instanceof MethodRef)) {
             return false;
         }
         MethodRef other = (MethodRef) o;
-        return other.mDeclClass.equals(mDeclClass) &&
-            other.mReturnType.equals(mReturnType) &&
-            other.mMethodName.equals(mMethodName) &&
-            Arrays.equals(other.mArgTypes, mArgTypes);
+        return other.mDeclClass.equals(mDeclClass) && other.mReturnType.equals(mReturnType)
+                && other.mMethodName.equals(mMethodName)
+                && Arrays.equals(other.mArgTypes, mArgTypes);
     }
 
-    @Override public int hashCode() {
-        return mDeclClass.hashCode() ^ mReturnType.hashCode() ^
-            mMethodName.hashCode() ^ Arrays.hashCode(mArgTypes);
+    @Override
+    public int hashCode() {
+        return mDeclClass.hashCode() ^ mReturnType.hashCode() ^ mMethodName.hashCode()
+                ^ Arrays.hashCode(mArgTypes);
     }
 }

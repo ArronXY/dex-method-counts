@@ -14,19 +14,15 @@
 
 package info.persistent.dex;
 
-import com.android.dexdeps.DexData;
-import com.android.dexdeps.DexDataException;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
+
+import com.android.dexdeps.DexData;
+import com.android.dexdeps.DexDataException;
 
 public class Main {
     private static final String CLASSES_DEX = "classes.dex";
@@ -55,8 +51,7 @@ public class Main {
                 RandomAccessFile raf = openInputFile(fileName);
                 DexData dexData = new DexData(raf);
                 dexData.load();
-                DexMethodCounts.generate(
-                    dexData, includeClasses, packageFilter, maxDepth, filter);
+                DexMethodCounts.generate(dexData, includeClasses, packageFilter, maxDepth, filter);
                 raf.close();
             }
             System.out.println("Overall method count: " + DexMethodCounts.overallCount);
@@ -76,10 +71,11 @@ public class Main {
 
     /**
      * Opens an input file, which could be a .dex or a .jar/.apk with a
-     * classes.dex inside.  If the latter, we extract the contents to a
+     * classes.dex inside. If the latter, we extract the contents to a
      * temporary file.
      *
-     * @param fileName the name of the file to open
+     * @param fileName
+     *            the name of the file to open
      */
     RandomAccessFile openInputFile(String fileName) throws IOException {
         RandomAccessFile raf;
@@ -97,11 +93,13 @@ public class Main {
      * Tries to open an input file as a Zip archive (jar/apk) with a
      * "classes.dex" inside.
      *
-     * @param fileName the name of the file to open
+     * @param fileName
+     *            the name of the file to open
      * @return a RandomAccessFile for classes.dex, or null if the input file
      *         is not a zip archive
-     * @throws IOException if the file isn't found, or it's a zip and
-     *         classes.dex isn't found inside
+     * @throws IOException
+     *             if the file isn't found, or it's a zip and
+     *             classes.dex isn't found inside
      */
     RandomAccessFile openInputFileAsZip(String fileName) throws IOException {
         ZipFile zipFile;
@@ -113,8 +111,7 @@ public class Main {
             zipFile = new ZipFile(fileName);
         } catch (FileNotFoundException fnfe) {
             /* not found, no point in retrying as non-zip */
-            System.err.println("Unable to open '" + fileName + "': " +
-                fnfe.getMessage());
+            System.err.println("Unable to open '" + fileName + "': " + fnfe.getMessage());
             throw fnfe;
         } catch (ZipException ze) {
             /* not a zip */
@@ -122,14 +119,13 @@ public class Main {
         }
 
         /*
-         * We know it's a zip; see if there's anything useful inside.  A
+         * We know it's a zip; see if there's anything useful inside. A
          * failure here results in some type of IOException (of which
          * ZipException is a subclass).
          */
         ZipEntry entry = zipFile.getEntry(CLASSES_DEX);
         if (entry == null) {
-            System.err.println("Unable to find '" + CLASSES_DEX +
-                "' in '" + fileName + "'");
+            System.err.println("Unable to find '" + CLASSES_DEX + "' in '" + fileName + "'");
             zipFile.close();
             throw new ZipException();
         }
@@ -141,7 +137,7 @@ public class Main {
          * to ensure it doesn't hang around if we fail.
          */
         File tempFile = File.createTempFile("dexdeps", ".dex");
-        //System.out.println("+++ using temp " + tempFile);
+        // System.out.println("+++ using temp " + tempFile);
         RandomAccessFile raf = new RandomAccessFile(tempFile, "rw");
         tempFile.delete();
 
@@ -178,11 +174,9 @@ public class Main {
             } else if (arg.startsWith("--package-filter=")) {
                 packageFilter = arg.substring(arg.indexOf('=') + 1);
             } else if (arg.startsWith("--max-depth=")) {
-                maxDepth =
-                    Integer.parseInt(arg.substring(arg.indexOf('=') + 1));
+                maxDepth = Integer.parseInt(arg.substring(arg.indexOf('=') + 1));
             } else if (arg.startsWith("--filter=")) {
-                filter = Enum.valueOf(
-                    DexMethodCounts.Filter.class,
+                filter = Enum.valueOf(DexMethodCounts.Filter.class,
                     arg.substring(arg.indexOf('=') + 1).toUpperCase());
             } else {
                 System.err.println("Unknown option '" + arg + "'");
@@ -201,14 +195,10 @@ public class Main {
     }
 
     void usage() {
-        System.err.print(
-            "DEX per-package/class method counts v1.0\n" +
-            "Usage: dex-method-counts [options] <file.{dex,apk,jar,directory}> ...\n" +
-            "Options:\n" +
-            "  --include-classes\n" +
-            "  --package-filter=com.foo.bar\n" +
-            "  --max-depth=N\n"
-        );
+        System.err.print("DEX per-package/class method counts v1.0\n"
+                + "Usage: dex-method-counts [options] <file.{dex,apk,jar,directory}> ...\n"
+                + "Options:\n" + "  --include-classes\n" + "  --package-filter=com.foo.bar\n"
+                + "  --max-depth=N\n");
     }
 
     /**
@@ -225,7 +215,7 @@ public class Main {
             File file = new File(inputFileName);
             if (file.isDirectory()) {
                 String dirPath = file.getAbsolutePath();
-                for (String fileInDir: file.list()){
+                for (String fileInDir : file.list()) {
                     fileNames.add(dirPath + File.separator + fileInDir);
                 }
             } else {
@@ -235,5 +225,6 @@ public class Main {
         return fileNames;
     }
 
-    private static class UsageException extends RuntimeException {}
+    private static class UsageException extends RuntimeException {
+    }
 }

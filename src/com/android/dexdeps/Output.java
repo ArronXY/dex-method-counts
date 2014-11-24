@@ -67,8 +67,7 @@ public class Output {
         }
     }
 
-    public static void generate(DexData dexData, String format,
-            boolean justClasses) {
+    public static void generate(DexData dexData, String format, boolean justClasses) {
         if (format.equals("brief")) {
             printBrief(dexData, justClasses);
         } else if (format.equals("xml")) {
@@ -119,8 +118,8 @@ public class Output {
             for (int j = 0; j < fields.length; j++) {
                 FieldRef ref = fields[j];
 
-                out.println(descriptorToDot(ref.getDeclClassName()) +
-                    "." + ref.getName() + " : " + ref.getTypeName());
+                out.println(descriptorToDot(ref.getDeclClassName()) + "." + ref.getName() + " : "
+                        + ref.getTypeName());
             }
         }
     }
@@ -136,8 +135,8 @@ public class Output {
             for (int j = 0; j < methods.length; j++) {
                 MethodRef ref = methods[j];
 
-                out.println(descriptorToDot(ref.getDeclClassName()) +
-                    "." + ref.getName() + " : " + ref.getDescriptor());
+                out.println(descriptorToDot(ref.getDeclClassName()) + "." + ref.getName() + " : "
+                        + ref.getDescriptor());
             }
         }
     }
@@ -151,7 +150,7 @@ public class Output {
         ClassRef[] externClassRefs = dexData.getExternalReferences();
 
         /*
-         * Iterate through externClassRefs.  For each class, dump all of
+         * Iterate through externClassRefs. For each class, dump all of
          * the matching fields and methods.
          */
         String prevPackage = null;
@@ -169,8 +168,7 @@ public class Output {
                     out.println(IN1 + "</package>");
                 }
 
-                out.println(IN1 +
-                    "<package name=\"" + packageName + "\">");
+                out.println(IN1 + "<package name=\"" + packageName + "\">");
 
                 prevPackage = packageName;
             }
@@ -195,8 +193,8 @@ public class Output {
         for (int i = 0; i < fields.length; i++) {
             FieldRef fref = fields[i];
 
-            out.println(IN3 + "<field name=\"" + fref.getName() +
-                "\" type=\"" + descriptorToDot(fref.getTypeName()) + "\"/>");
+            out.println(IN3 + "<field name=\"" + fref.getName() + "\" type=\""
+                    + descriptorToDot(fref.getTypeName()) + "\"/>");
         }
     }
 
@@ -213,17 +211,14 @@ public class Output {
             constructor = mref.getName().equals("<init>");
             if (constructor) {
                 // use class name instead of method name
-                out.println(IN3 + "<constructor name=\"" +
-                    classNameOnly(declClassName) + "\">");
+                out.println(IN3 + "<constructor name=\"" + classNameOnly(declClassName) + "\">");
             } else {
-                out.println(IN3 + "<method name=\"" + mref.getName() +
-                    "\" return=\"" + descriptorToDot(mref.getReturnTypeName()) +
-                    "\">");
+                out.println(IN3 + "<method name=\"" + mref.getName() + "\" return=\""
+                        + descriptorToDot(mref.getReturnTypeName()) + "\">");
             }
             String[] args = mref.getArgumentTypeNames();
             for (int j = 0; j < args.length; j++) {
-                out.println(IN4 + "<parameter type=\"" +
-                    descriptorToDot(args[j]) + "\"/>");
+                out.println(IN4 + "<parameter type=\"" + descriptorToDot(args[j]) + "\"/>");
             }
             if (constructor) {
                 out.println(IN3 + "</constructor>");
@@ -233,10 +228,9 @@ public class Output {
         }
     }
 
-
     /*
      * =======================================================================
-     *      Utility functions
+     * Utility functions
      * =======================================================================
      */
 
@@ -247,15 +241,24 @@ public class Output {
     public static String primitiveTypeLabel(char typeChar) {
         /* primitive type; substitute human-readable name in */
         switch (typeChar) {
-            case 'B':   return "byte";
-            case 'C':   return "char";
-            case 'D':   return "double";
-            case 'F':   return "float";
-            case 'I':   return "int";
-            case 'J':   return "long";
-            case 'S':   return "short";
-            case 'V':   return "void";
-            case 'Z':   return "boolean";
+            case 'B':
+                return "byte";
+            case 'C':
+                return "char";
+            case 'D':
+                return "double";
+            case 'F':
+                return "float";
+            case 'I':
+                return "int";
+            case 'J':
+                return "long";
+            case 'S':
+                return "short";
+            case 'V':
+                return "void";
+            case 'Z':
+                return "boolean";
             default:
                 /* huh? */
                 System.err.println("Unexpected class char " + typeChar);
@@ -265,7 +268,7 @@ public class Output {
     }
 
     /**
-     * Converts a type descriptor to human-readable "dotted" form.  For
+     * Converts a type descriptor to human-readable "dotted" form. For
      * example, "Ljava/lang/String;" becomes "java.lang.String", and
      * "[I" becomes "int[].
      */
@@ -287,11 +290,10 @@ public class Output {
             targetLen = descr.length();
         } else {
             /* account for leading 'L' and trailing ';' */
-            if (targetLen >= 2 && descr.charAt(offset) == 'L' &&
-                descr.charAt(offset+targetLen-1) == ';')
-            {
-                targetLen -= 2;     /* two fewer chars to copy */
-                offset++;           /* skip the 'L' */
+            if (targetLen >= 2 && descr.charAt(offset) == 'L'
+                    && descr.charAt(offset + targetLen - 1) == ';') {
+                targetLen -= 2; /* two fewer chars to copy */
+                offset++; /* skip the 'L' */
             }
         }
 
@@ -324,7 +326,7 @@ public class Output {
         if (start < 0) {
             return dotted;
         } else {
-            return dotted.substring(start+1);
+            return dotted.substring(start + 1);
         }
     }
 
