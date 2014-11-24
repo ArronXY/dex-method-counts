@@ -54,6 +54,7 @@ public class Main {
                 DexMethodCounts.generate(dexData, includeClasses, packageFilter, maxDepth, filter);
                 raf.close();
             }
+            DexMethodCounts.generateSortedList();
             System.out.println("Overall method count: " + DexMethodCounts.overallCount);
         } catch (UsageException ue) {
             usage();

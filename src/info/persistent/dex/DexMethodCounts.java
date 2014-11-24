@@ -26,6 +26,8 @@ public class DexMethodCounts {
     private static final PrintStream out = System.out;
     public static int overallCount = 0;
 
+    private static HashMap<String, Integer> sMap = new HashMap<String, Integer>();
+
     public static void generate(DexData dexData, boolean includeClasses, String packageFilter,
             int maxDepth, Filter filter) {
         MethodRef[] methodRefs = getMethodRefs(dexData, filter);
@@ -55,6 +57,22 @@ public class DexMethodCounts {
         }
 
         packageTree.output("");
+    }
+
+    public static void generateSortedList() {
+        List<Map.Entry<String, Integer>> infoIds = new ArrayList<Map.Entry<String, Integer>>(
+                sMap.entrySet());
+
+        Collections.sort(infoIds, new Comparator<Map.Entry<String, Integer>>() {
+            public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
+                return (o2.getValue()).compareTo(o1.getValue());
+            }
+        });
+
+        for (int i = 0, size = infoIds.size(); i < size; i++) {
+            System.out.println("package = " + infoIds.get(i).getKey() + " , method count = "
+                    + infoIds.get(i).getValue());
+        }
     }
 
     private static MethodRef[] getMethodRefs(DexData dexData, Filter filter) {
@@ -102,6 +120,11 @@ public class DexMethodCounts {
             indent += "    ";
             for (String name : children.navigableKeySet()) {
                 Node child = children.get(name);
+                // Hack For DP
+                if ("main".equals(name) || "wed".equals(name) || "wedding".equals(name)
+                        || "t".equals(name) || "beauty".equals(name)) {
+                    sMap.put(name, child.count);
+                }
                 out.println(indent + name + ": " + child.count);
                 child.output(indent);
             }
